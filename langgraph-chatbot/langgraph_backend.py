@@ -50,5 +50,15 @@ graph.add_edge('chat_node',END)
 
 workflow = graph.compile(checkpointer=checkpointer)
 
+config = {'configurable':{'thread_id':'1'}}
 
+# # # streaming the response
+# for message_chunk, metadata in workflow.stream({
+#     'messages': [HumanMessage(content='tell me the recepie to make biryani?')]},
+#       config=config,
+#       stream_mode='messages'
+#     ) :
+#     if message_chunk.content:
+#         print(message_chunk.content, end=' ', flush=True)
+    
 

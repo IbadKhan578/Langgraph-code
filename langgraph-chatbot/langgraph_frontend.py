@@ -21,11 +21,18 @@ if user_input:
     with st.chat_message('user'):
         st.text(user_input)
 
-    response= workflow.invoke({'messages': [HumanMessage(content=user_input)]},config=config) 
-    ai_message = response['messages'][-1].content
+   
 
-
-    st.session_state.chat_history.append({'role':'assistant','content':ai_message})
     with st.chat_message('assistant'):
-        st.text(ai_message)    
+        with st.spinner('thinking...'):
+           ai_message= st.write_stream(
+              message_chunk.content for message_chunk, metadata in workflow.stream({
+               'messages': [HumanMessage(content=user_input)]},
+               config=config,
+               stream_mode='messages'
+    ) 
+            
+    )
+    st.session_state.chat_history.append({'role':'assistant','content':ai_message})
+   
 
