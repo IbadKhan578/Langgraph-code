@@ -4,7 +4,8 @@ from langchain_core.messages import BaseMessage , HumanMessage , AIMessage
 from dotenv import load_dotenv
 import os
 from langchain_groq import ChatGroq
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
 
 load_dotenv()
 
@@ -37,7 +38,11 @@ def chat_node(state:messageState):
     }
 
 
-checkpointer = MemorySaver()
+conn = sqlite3.connect( database='chatbot.db' , check_same_thread=False)
+#checkpointer
+checkpointer = SqliteSaver(conn=conn)
+
+
 graph = StateGraph(messageState)
 
 # add node
@@ -50,7 +55,6 @@ graph.add_edge('chat_node',END)
 
 workflow = graph.compile(checkpointer=checkpointer)
 
-config = {'configurable':{'thread_id':'1'}}
 
 # # # streaming the response
 # for message_chunk, metadata in workflow.stream({
@@ -61,4 +65,10 @@ config = {'configurable':{'thread_id':'1'}}
 #     if message_chunk.content:
 #         print(message_chunk.content, end=' ', flush=True)
     
+def get_all_threads():
+    all_thread = set()
+    for checkpoint in checkpointer.list(None): # return all the checkpoints from the sqllite db
+        all_thread.add(checkpoint.config['configurable']['thread_id'])
 
+
+    return list(all_thread)
